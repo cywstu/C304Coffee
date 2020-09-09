@@ -1,8 +1,17 @@
+/*
+const mongoose = require("mongoose");
+
+mongoose.connect(
+  process.env.DB_CONNECTION,
+  { useNewUrlParser: true, useUnifiedTopology: true },
+  () => console.log("connected")
+);
+/*
+/*
 const dbName = "c304db";
 
 const MongoClient = require("mongodb").MongoClient;
 const assert = require("assert");
-const uri = "mongodb+srv://c304:c304coffee@cluster0.uoxfe.mongodb.net/<dbname>?retryWrites=true&w=majority";
 
 const connectDB = async() =>{
     await MongoClient.connect(uri, {
@@ -14,5 +23,6 @@ const connectDB = async() =>{
        
     client.close();
 };
+*/
 
-module.exports = connectDB;
+//module.exports = connectDB;
