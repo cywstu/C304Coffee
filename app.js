@@ -7,7 +7,7 @@ app.use(morgan("dev"));
 const bodyParser = require("body-parser");
 app.use(bodyParser.json());
 
-/*
+
 //cors problem
 app.use((req, res, next) =>{
     res.header("Access-Control-Allow-Origin", "*");
@@ -18,7 +18,7 @@ app.use((req, res, next) =>{
     }
     next();
 });
-*/
+
 
 //custom modules
 const db = require("./connections/db");
