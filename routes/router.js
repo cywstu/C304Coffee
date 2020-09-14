@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-//const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 
 const Coffee = require("../models/Coffee");
 const User = require("../models/User");
@@ -33,7 +33,7 @@ router.get("/coffee/:coffeeId", async (req, res) => {
 //=============================================
 // login/logout
 //=============================================
-/*
+
 router.post("/signup", (req, res) =>{
     User.find({ username: req.body.username })
     .then(found =>{
@@ -61,7 +61,7 @@ router.post("/signup", (req, res) =>{
         }
     });
 });
-*/
+
 
 router.get("/login", (req, res) => {
     try{
