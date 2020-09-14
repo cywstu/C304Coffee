@@ -1,11 +1,15 @@
+"use strict"
 require("dotenv/config");
 const express = require("express");
 const app = express();
+const morgan = require("morgan");
+app.use(morgan("dev"));
 const bodyParser = require("body-parser");
 app.use(bodyParser.json());
 
 //import custom modules
-const connectDB = require("./connections/db");
+const db = require("./connections/db");
+db.connect();
 const router = require("./routes/router");
 app.use(router);
 
@@ -13,15 +17,8 @@ app.use(router);
 const port = process.env.PORT || 3000;
 
 //============================================
-//connectDB();
 
-const mongoose = require("mongoose");
 
-mongoose.connect(
-    process.env.DB_CONNECTION,
-    { useNewUrlParser: true, useUnifiedTopology: true }, 
-    () => console.log("db connected")
-);
 
 //router(app);
 

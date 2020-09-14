@@ -1,7 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const Coffee = require("../models/Coffee");
+const bcrypt = require("bcrypt");
 
+const Coffee = require("../models/Coffee");
+const User = require("../models/User");
 //=============================================
 // coffee
 //=============================================
@@ -32,6 +34,33 @@ router.get("/coffee/:coffeeId", async (req, res) => {
 // login/logout
 //=============================================
 
+router.post("/signup", (req, res) =>{
+    User.find({ username: req.body.username })
+    .then(found =>{
+        if(found.length != 0){
+            res.json({message: "username already exists"});
+        }else{
+            bcrypt.hash(req.body.password, 16, (err, hash) => {
+                if(err){
+                    return res.status(500).json({ error: err });
+                }else{
+                    const user = new User({
+                        username: req.body.username,
+                        password: hash
+                    });
+        
+                    user.save()
+                    .then(result =>{
+                        res.json({message: "user created: "});
+                    })
+                    .catch(err =>{
+                        res.json({message:err});
+                    });
+                }
+            });
+        }
+    });
+});
 
 router.get("/login", (req, res) => {
     try{
