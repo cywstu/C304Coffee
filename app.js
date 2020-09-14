@@ -34,7 +34,7 @@ require("dotenv/config");
 const mongoose = require("mongoose");
 
 mongoose.connect(
-    process.env.DB_CONNECTION,
+    "mongodb+srv://c304c:c304coffee@cluster0.uoxfe.mongodb.net/c304c?retryWrites=true&w=majority",
     { useNewUrlParser: true, useUnifiedTopology: true }, 
     () => console.log("db connected")
 );
