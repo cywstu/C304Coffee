@@ -21,8 +21,8 @@ app.use((req, res, next) =>{
 */
 
 //custom modules
-//const db = require("./connections/db");
-//db.connect();
+const db = require("./connections/db");
+db.connect();
 const router = require("./routes/router");
 app.use(router);
 
@@ -30,14 +30,7 @@ app.use(router);
 const port = process.env.PORT || 3000;
 
 //============================================
-require("dotenv/config");
-const mongoose = require("mongoose");
 
-mongoose.connect(
-    process.env.DB_CONNECTION,
-    { useNewUrlParser: true, useUnifiedTopology: true }, 
-    () => console.log("db connected")
-);
 
 
 
