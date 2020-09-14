@@ -7,6 +7,7 @@ app.use(morgan("dev"));
 const bodyParser = require("body-parser");
 app.use(bodyParser.json());
 
+/*
 //cors problem
 app.use((req, res, next) =>{
     res.header("Access-Control-Allow-Origin", "*");
@@ -17,10 +18,11 @@ app.use((req, res, next) =>{
     }
     next();
 });
+*/
 
 //custom modules
-const db = require("./connections/db");
-db.connect();
+//const db = require("./connections/db");
+//db.connect();
 const router = require("./routes/router");
 app.use(router);
 
@@ -28,6 +30,14 @@ app.use(router);
 const port = process.env.PORT || 3000;
 
 //============================================
+require("dotenv/config");
+const mongoose = require("mongoose");
+
+mongoose.connect(
+    process.env.DB_CONNECTION,
+    { useNewUrlParser: true, useUnifiedTopology: true }, 
+    () => console.log("db connected")
+);
 
 
 
