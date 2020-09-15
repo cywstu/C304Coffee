@@ -22,16 +22,17 @@ router.get("/link", (req, res)=>{
 
 router.get("/coffee", async (req, res) => {
     try{
-        const coffee = await Post.find();
-        res.json(posts);
+        const coffee = await Coffee.find();
+        res.json(coffee);
     }catch(err){
-        res.json({message:err});
+        res.json({message: "failed to find"});
     }
 });
 
 router.get("/coffee/:coffeeId", async (req, res) => {
     try{
-        const curCoffee = await Coffee.findById(req.params.coffeeId);
+        const reqCoffeeName = req.params.coffeeId.replace(/_/g, " ");
+        const curCoffee = await Coffee.find({ name: reqCoffeeName});
         res.json(curCoffee);
     }catch(err){
         res.json({message:err});
