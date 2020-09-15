@@ -16,6 +16,10 @@ router.post("/", (req, res) =>{
     res.send("hi post");
 });
 
+router.get("/link", (req, res)=>{
+    res.send(process.env.DB_CONNECTION);
+});
+
 router.get("/coffee", async (req, res) => {
     try{
         const coffee = await Post.find();
