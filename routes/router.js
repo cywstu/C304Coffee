@@ -12,6 +12,10 @@ router.get("/", (req, res) => {
     res.send("hi");
 });
 
+router.post("/", (req, res) =>{
+    res.send("hi post");
+});
+
 router.get("/coffee", async (req, res) => {
     try{
         const coffee = await Post.find();
