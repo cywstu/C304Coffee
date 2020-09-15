@@ -50,7 +50,7 @@ router.post("/signup", (req, res) =>{
         }else{
             bcrypt.hash(req.body.password, 16, (err, hash) => {
                 if(err){
-                    return res.status(500).json({ error: "hash failed" });
+                    return res.status(500).json({ message: "hash failed: " + hash });
                 }else{
                     const user = new User({
                         username: req.body.username,
