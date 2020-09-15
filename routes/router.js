@@ -50,7 +50,7 @@ router.post("/signup", (req, res) =>{
         }else{
             bcrypt.hash(req.body.password, 16, (err, hash) => {
                 if(err){
-                    return res.status(500).json({ error: err });
+                    return res.status(500).json({ error: "hash failed" });
                 }else{
                     const user = new User({
                         username: req.body.username,
@@ -62,7 +62,7 @@ router.post("/signup", (req, res) =>{
                         res.json({message: "user created: "});
                     })
                     .catch(err =>{
-                        res.json({message:err});
+                        res.json({message: "failed to create user"});
                     });
                 }
             });
