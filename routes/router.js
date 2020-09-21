@@ -1,9 +1,38 @@
+"use strict"
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const multer = require("multer");
+const storage = multer.diskStorage({
+    destination: function(req, file, cb){
+        cb(null, "./images");
+    },
+    filename: function(req, file, cb){
+        cb(null, new Date().toISOString().replace(/:/g, "-") + "_" + file.originalname);
+    }
+});
+const fileFilter = (req, file, cb) =>{
+    if(file.mimetype === "image/jpeg" || file.mimetype === "image/png"){
+        cb(null, true);
+    }else{
+        cb(new Error("file type not allowed"), false);
+    }
+}
+const upload = multer({ 
+    storage: storage,
+    limits: { fileSize: 1024*1024*10 },
+    fileFilter: fileFilter
+});
 
+//custom modules
 const Coffee = require("../models/Coffee");
 const User = require("../models/User");
+//middlewares
+const auth = require("../middlewares/auth");
+//controller
+const Controller = require("../controllers/controller");
+
 //=============================================
 // coffee
 //=============================================
@@ -20,16 +49,9 @@ router.get("/link", (req, res)=>{
     res.send(process.env.DB_CONNECTION);
 });
 
-router.get("/coffee", async (req, res) => {
-    try{
-        const coffee = await Coffee.find();
-        res.json(coffee);
-    }catch(err){
-        res.json({message: "failed to find"});
-    }
-});
+router.get("/coffees", Controller.getAllCoffees);
 
-router.get("/coffee/:coffeeId", async (req, res) => {
+router.get("/coffees/:coffeeId", async (req, res) => {
     try{
         const reqCoffeeName = req.params.coffeeId.replace(/_/g, " ");
         const curCoffee = await Coffee.find({ name: reqCoffeeName});
@@ -68,64 +90,91 @@ router.post("/signup", (req, res) =>{
                 }
             });
         }
+    })
+    .catch(err => {
+        res.send({ message: "database connection failed"});
     });
 });
 
 
-router.get("/login", (req, res) => {
-    try{
-        res.send("login");
-    }catch(err){
-        res.json({message:err});
-    }
-});
-
-router.post("/login", async (req, res) => {
-    const curPost = new Post({
-        title: req.body.title,
-        desc: req.body.desc
+router.post("/login", (req, res) => {
+    User.findOne({ username: req.body.username })
+    .then(found=>{
+        if(found.length == 0){
+            res.send({ message: "wrong username or password" })
+        }else{
+            bcrypt.compare(req.body.password, found.password, (err, result) =>{
+                if(err){
+                    res.send({ message: "wrong username or password"});
+                }else{
+                    const token = jwt.sign(
+                        {username: found.username},
+                        process.env.JWT_KEY,
+                        {expiresIn: "1h"}
+                    );
+                    res.status(200).json(
+                        {message: "login success",
+                        token: token}
+                    );
+                }
+            });
+        }
+    })
+    .catch(err => {
+        res.send({ message: "database connection failed"});
     });
-
-    try{
-        const savedPost = await curPost.save();
-        res.json(savedPost);
-    }catch(err){
-        res.json({message: err});
-    }
-    console.log("login post");
 });
 
 //=============================================
 // add/delete coffee
 //=============================================
 
-router.delete("/deleteCoffee/:coffeeId", async(req,res) =>{
+router.get("/delete", auth, async(req,res) =>{
     try{
-        const removedPost = await Coffee.remove({_id: req.params.postId});
-        res.json(removedPost);
+        res.json({ data: "all removable coffees" });
     }catch(err){
-        res.json({ message: err});
+        res.json({ message: err });
     }    
 });
 
-router.patch("/updateCoffee/:coffeeId", async(req,res) =>{
+router.delete("/delete/:coffeeId", auth, async(req,res) =>{
+    try{
+        const removedCoffee = await Coffee.remove({name: req.params.coffeeId});
+        res.json(removedCoffee);
+    }catch(err){
+        res.json({ message: err });
+    }    
+});
+
+router.get("/update", auth, async(req,res) =>{
+    try{
+        res.json({ data: "all updatable coffees" });
+    }catch(err){
+        res.json({ message: err });
+    }    
+});
+
+router.patch("/update/:coffeeId", auth, async(req,res) =>{
     try{
         const updatedCoffee = await Coffee.update(
-            {_id: req.params.postId},
+            {name: req.params.name},
             {$set:{
                 name: req.body.name,
-                desc:req.body.desc
+                desc: req.body.desc
             }});
         res.json(updatedCoffee);
     }catch(err){
-        res.json({ message: err});
+        res.json({ message: err });
     }    
 });
 
-router.post("/addcoffee", async (req, res) => {
+router.post("/add", auth, upload.single("image"),async (req, res) => {
+    //console.log(req.file);
     const newCoffee = new Coffee({
         name: req.body.name,
-        desc: req.body.desc
+        desc: req.body.desc,
+        addDate: new Date().toISOString(),
+        image: req.file.path
     });
 
     try{

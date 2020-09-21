@@ -2,6 +2,7 @@
 require("dotenv/config");
 const express = require("express");
 const app = express();
+const mongoose = require("mongoose");
 const morgan = require("morgan");
 app.use(morgan("dev"));
 const bodyParser = require("body-parser");
@@ -21,18 +22,20 @@ app.use((req, res, next) =>{
 */
 
 //custom modules
-const db = require("./connections/db");
-db.connect();
 const router = require("./routes/router");
 app.use(router);
+app.use("/images", express.static("images"));
 
 //vars
 const port = process.env.PORT || 3000;
 
 //============================================
 
-
-
+mongoose.connect(
+    process.env.DB_CONNECTION,
+    { useNewUrlParser: true, useUnifiedTopology: true }, 
+    () => console.log("db connected")
+);
 
 //router(app);
 
