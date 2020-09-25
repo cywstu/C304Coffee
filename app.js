@@ -1,4 +1,5 @@
 "use strict"
+
 require("dotenv/config");
 const express = require("express");
 const app = express();
@@ -36,8 +37,6 @@ mongoose.connect(
     { useNewUrlParser: true, useUnifiedTopology: true }, 
     () => console.log("db connected")
 );
-
-//router(app);
 
 //============================================
 app.listen(port, () => console.log("listening on port " + port));

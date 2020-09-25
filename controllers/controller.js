@@ -1,20 +1,111 @@
 "use strict"
 
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+
 const Coffee = require("../models/Coffee");
 const User = require("../models/User");
 
-const auth = require("../middlewares/auth");
-//============================================
-
+//=============================================
+// get /coffees
+//=============================================
 exports.getAllCoffees = async (req, res) =>{
     try{
         const coffees = await Coffee.find();
         res.json(coffees);
+        console.log("get all coffees success")
     }catch(err){
         res.json({message: "failed to find"});
     }
 }
 
-exports.removeCoffee = auth, async(req, res) =>{
+exports.getCoffee = async (req, res) => {
+    try{
+        const reqCoffeeName = req.params.coffeeName.replace(/_/g, " ");
+        const curCoffee = await Coffee.findOne({ name: reqCoffeeName});
+        res.json(curCoffee);
+        console.log("get coffee success");
+    }catch(err){
+        res.json({ message: "coffee not found." });
+    }
+}
 
+//=============================================
+// login/logout
+//=============================================
+exports.login = (req, res) => {
+    User.findOne({ username: req.body.username })
+    .then(found=>{
+        if(found.length == 0){
+            res.json({ message: "wrong username or password" });
+        }else{
+            bcrypt.compare(req.body.password, found.password, (err, result) =>{
+                if(err){
+                    res.json({ message: "wrong username or password"});
+                }else{
+                    const token = jwt.sign(
+                        {username: found.username},
+                        process.env.JWT_KEY,
+                        {expiresIn: "1h"}
+                    );
+                    res.status(200).json(
+                        {message: "login success",
+                        token: token}
+                    );
+                    console.log("login success");
+                }
+            });
+        }
+    })
+    .catch(err => {
+        res.json({ message: "login fail"});
+    });
+}
+
+//=============================================
+// add/edit/remove coffee
+//==============================================
+exports.addCoffee = async (req, res) => {
+    //console.log(req.file);
+    const newCoffee = new Coffee({
+        name: req.body.name,
+        desc: req.body.desc,
+        addDate: new Date().toISOString(),
+        image: req.file.path
+    });
+
+    try{
+        const savedCoffee = await newCoffee.save();
+        res.json({ message: "coffee added" });
+        console.log("coffee added");
+    }catch(err){
+        res.json({ message: "failed to add coffee " + err.message });
+    }
+}
+
+exports.editCoffee = async(req,res) =>{
+    try{
+        const editedCoffee = await Coffee.updateOne(
+            { _id: req.params.coffeeId },
+            {$set:{
+                name: req.body.name,
+                desc: req.body.desc
+            }});
+        res.json({ message: "coffee edited" });
+        console.log("coffee edited");
+    }catch(err){
+        res.json({ message: "failed to edit coffee info." });
+    }
+}
+
+
+exports.removeCoffee = async(req,res) =>{
+    try{
+        //console.log("id: " + req.params.coffeeId);
+        const removedCoffee = await Coffee.deleteOne({ "_id": req.params.coffeeId });
+        res.json({ message: "coffee removed!" });
+        console.log("coffee removed");
+    }catch(err){
+        res.json({ message: "failed to remove coffee." });
+    }    
 }
