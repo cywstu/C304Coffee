@@ -30,13 +30,14 @@ router.get("/", (req, res) => {
 
 router.post("/login", Controller.login);
 
-router.get("/coffees", Controller.getAllCoffees);
+router.get("/coffees", (req, res) => Controller.getAllCoffees);
 router.get("/coffees/:coffeeName", Controller.getCoffee);
 router.get("/coffees/:coffeeName/image", Controller.getCoffeeImage);
+router.get("/coffees/id/:coffeeId", Controller.getCoffeeFromId);
 
 router.post("/add", auth, upload.single("image"), Controller.addCoffee);
-router.put("/edit/:coffeeId", auth, Controller.editCoffee);
-router.delete("/remove/:coffeeId", auth, Controller.removeCoffee);
+router.put("/edit/:coffeeId", auth, upload.single("image"), Controller.editCoffee);
+router.delete("/remove/:coffeeId",  Controller.removeCoffee);
 
 //================================================
 //signup(unused)

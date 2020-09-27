@@ -12,7 +12,7 @@ const User = require("../models/User");
 //=============================================
 exports.getAllCoffees = async (req, res) =>{
     try{
-        const coffees = await Coffee.find();
+        const coffees = await Coffee.find({}, "_id name desc addDate");
         res.json(coffees);
         console.log("get all coffees success")
     }catch(err){
@@ -23,7 +23,18 @@ exports.getAllCoffees = async (req, res) =>{
 exports.getCoffee = async (req, res) => {
     try{
         const reqCoffeeName = req.params.coffeeName.replace(/_/g, " ");
-        const curCoffee = await Coffee.findOne({ name: reqCoffeeName });
+        const curCoffee = await Coffee.findOne({ name: reqCoffeeName }, "_id name desc addDate");
+        res.json(curCoffee);
+        console.log("get coffee success");
+    }catch(err){
+        res.json({ message: "coffee not found." });
+    }
+}
+
+exports.getCoffeeFromId = async (req, res) => {
+    try{
+        const reqCoffeeId = req.params.coffeeId;
+        const curCoffee = await Coffee.findOne({ _id: reqCoffeeId }, "_id name desc addDate");
         res.json(curCoffee);
         console.log("get coffee success");
     }catch(err){
@@ -34,7 +45,7 @@ exports.getCoffee = async (req, res) => {
 exports.getCoffeeImage = async (req, res) => {
     try{
         const reqCoffeeName = req.params.coffeeName.replace(/_/g, " ");
-        const curCoffee = await Coffee.findOne({ name: reqCoffeeName });
+        const curCoffee = await Coffee.findOne({ name: reqCoffeeName }, "image");
         res.set('Content-Type', 'image/png');
         res.send(curCoffee.image);
         console.log("get coffee success");
@@ -88,36 +99,39 @@ exports.addCoffee = async (req, res) => {
     });
     try{
         const savedCoffee = await newCoffee.save();
-        res.json({ message: "coffee added" });
-        console.log("coffee added");
+        res.json({ message: "coffee added", id: savedCoffee._id });
+        console.log("coffee added: " + savedCoffee._id);
     }catch(err){
         res.json({ message: err.message });
     }
 }
 
-exports.editCoffee = async(req,res) =>{
+exports.editCoffee = async (req, res) =>{
     try{
         const editedCoffee = await Coffee.updateOne(
             { _id: req.params.coffeeId },
             {$set:{
                 name: req.body.name,
-                desc: req.body.desc
-            }});
+                desc: req.body.desc,
+                image: req.file.buffer
+            }}
+        );
         res.json({ message: "coffee edited" });
         console.log("coffee edited");
     }catch(err){
-        res.json({ message: "failed to edit coffee info." });
+        res.json({ hello: "163247457463456" });
     }
 }
 
 
-exports.removeCoffee = async(req,res) =>{
+exports.removeCoffee = async (req, res) =>{
     try{
-        //console.log("id: " + req.params.coffeeId);
+        console.log("id: " + req.params.coffeeId);
         const removedCoffee = await Coffee.deleteOne({ "_id": req.params.coffeeId });
         res.json({ message: "coffee removed!" });
         console.log("coffee removed");
     }catch(err){
         res.json({ message: "failed to remove coffee." });
-    }    
+    }
+    res.json({ message: "I wonder why" });
 }
