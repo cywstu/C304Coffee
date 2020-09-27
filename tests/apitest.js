@@ -125,15 +125,12 @@ describe("POST /add", ()=>{
             expect(res.body.message).contains("success");
             return res.body.token;
         }).then((token) =>{   //add coffee
-            const newCoffee = {
-                name: "testCoffee",
-                desc: "this is test coffee"
-            };
             request(app).post("/add")
             .set('Authorization', token)
-            .send(newCoffee)
+            .field("name", "testCoffee")
+            .field("desc", "this is test coffee")
+            .attach("image", "./tests/test.jpg")
             .then((res) =>{
-                console.log("result: " + res);
                 expect(res.body.message).contains("added");
                 done();
             }).catch((err)=>{
@@ -142,23 +139,6 @@ describe("POST /add", ()=>{
         }).catch((err) =>{
             done(err);
         });
-        /*
-        //add coffee
-        const newCoffee = {
-            name: "testCoffee",
-            desc: "this is test coffee",
-            addDate: new Date()
-        };
-        request(router).post("/add")
-        .send(newCoffee)
-        .then((res) =>{
-            expect(res.body.message).contains("added");
-            done();
-        })
-        .catch((err)=>{
-            done(err);
-        });
-        */
     });
 });
 
