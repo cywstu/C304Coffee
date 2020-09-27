@@ -66,6 +66,7 @@ describe("GET /coffees", ()=>{
 //===============================================
 // login test
 //===============================================
+/*
 describe("POST /login", ()=>{
     before((done) =>{
         connectDB()
@@ -95,11 +96,10 @@ describe("POST /login", ()=>{
         });
     });
 });
-
+*/
 //===============================================
 // add coffee tests
 //===============================================
-/*
 describe("POST /add", ()=>{
     before((done) =>{
         connectDB()
@@ -114,6 +114,36 @@ describe("POST /add", ()=>{
     });
 
     it("TEST: adding coffee to server", (done) =>{
+        //login
+        request(app).post("/login")
+        .send(new User({
+            username: "5555555",
+            password: "newpass"
+        }))
+        .then((res) => {
+            console.log("1: " + res.body.message);
+            expect(res.body.message).contains("success");
+            return res.body.token;
+        }).then((token) =>{   //add coffee
+            const newCoffee = {
+                name: "testCoffee",
+                desc: "this is test coffee"
+            };
+            request(app).post("/add")
+            .set('Authorization', token)
+            .send(newCoffee)
+            .then((res) =>{
+                console.log("result: " + res);
+                expect(res.body.message).contains("added");
+                done();
+            }).catch((err)=>{
+                done(err);
+            });
+        }).catch((err) =>{
+            done(err);
+        });
+        /*
+        //add coffee
         const newCoffee = {
             name: "testCoffee",
             desc: "this is test coffee",
@@ -128,9 +158,10 @@ describe("POST /add", ()=>{
         .catch((err)=>{
             done(err);
         });
+        */
     });
 });
-*/
+
 //===============================================
 // edit coffee tests
 //===============================================

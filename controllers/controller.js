@@ -2,6 +2,7 @@
 
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { reset } = require("nodemon");
 
 const Coffee = require("../models/Coffee");
 const User = require("../models/User");
@@ -22,8 +23,20 @@ exports.getAllCoffees = async (req, res) =>{
 exports.getCoffee = async (req, res) => {
     try{
         const reqCoffeeName = req.params.coffeeName.replace(/_/g, " ");
-        const curCoffee = await Coffee.findOne({ name: reqCoffeeName});
+        const curCoffee = await Coffee.findOne({ name: reqCoffeeName });
         res.json(curCoffee);
+        console.log("get coffee success");
+    }catch(err){
+        res.json({ message: "coffee not found." });
+    }
+}
+
+exports.getCoffeeImage = async (req, res) => {
+    try{
+        const reqCoffeeName = req.params.coffeeName.replace(/_/g, " ");
+        const curCoffee = await Coffee.findOne({ name: reqCoffeeName });
+        res.set('Content-Type', 'image/png');
+        res.send(curCoffee.image);
         console.log("get coffee success");
     }catch(err){
         res.json({ message: "coffee not found." });
@@ -71,15 +84,14 @@ exports.addCoffee = async (req, res) => {
         name: req.body.name,
         desc: req.body.desc,
         addDate: new Date().toISOString(),
-        image: req.file.path
+        image: req.file.buffer
     });
-
     try{
         const savedCoffee = await newCoffee.save();
         res.json({ message: "coffee added" });
         console.log("coffee added");
     }catch(err){
-        res.json({ message: "failed to add coffee " + err.message });
+        res.json({ message: err.message });
     }
 }
 
