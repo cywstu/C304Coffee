@@ -22,7 +22,7 @@ const Coffee = require("../models/Coffee");
 //===========================================
 
 describe("GET /", ()=>{
-    it("OK", (done) =>{
+    it("TEST: get home page", (done) =>{
         request(app).get("/")
         .then((res) => {
             expect(res.body.message).contains("success");
@@ -37,7 +37,7 @@ describe("GET /", ()=>{
 //===============================================
 // get coffee tests(done)
 //===============================================
-/*
+
 describe("GET /coffees", ()=>{
     before((done) =>{
         connectDB()
@@ -75,11 +75,11 @@ describe("GET /coffees", ()=>{
     
     
 });
-*/
+
 //===============================================
 // login test(done)
 //===============================================
-/*
+
 describe("POST /login", ()=>{
     before((done) =>{
         connectDB()
@@ -106,40 +106,55 @@ describe("POST /login", ()=>{
         });
     });
 });
-*/
+
 //===============================================
 // add coffee tests(done)
 //===============================================
-/*
+
 describe("POST /add", ()=>{
+    let loginToken;
+    let coffeeId;
+    
     before((done) =>{
         connectDB()
-        .then(() => done())
+        .then(() =>{
+            //login
+            request(app).post("/login")
+            .send(testUser)
+            .then((result) => {
+                expect(result.body.message).contains("success");
+                loginToken = result.body.token;
+                done();
+            })
+        })
         .catch((err) => done(err));
     });
 
     after((done) =>{
-        closeDB()
-        .then(() => done())
-        .catch((err) => done(err));
+        request(app).delete("/remove/" + coffeeId)
+        .set('Authorization', loginToken)
+        .then((deleteResult) =>{
+            console.log(deleteResult.body.message);
+            expect(deleteResult.body.message).contains("removed");
+            closeDB()
+            .then(() => done())
+            .catch((err) => done(err));
+        })
+        .catch((err)=> done(err));
     });
 
     it("TEST: adding coffee to server", (done) =>{
         //login
         request(app).post("/login")
         .send(testUser)
-        .then((res) => {
-            console.log("1: " + res.body.message);
-            expect(res.body.message).contains("success");
-            return res.body.token;
-        })
-        .then((token) =>{   //add coffee
+        .then(() =>{   //add coffee
             request(app).post("/add")
-            .set('Authorization', token)
+            .set('Authorization', loginToken)
             .field("name", "testCoffee")
             .field("desc", "this is test coffee")
             .attach("image", "./tests/test.jpg")
             .then((res) =>{
+                coffeeId = res.body.id;
                 expect(res.body.message).contains("added");
                 done();
             })
@@ -152,65 +167,80 @@ describe("POST /add", ()=>{
         });
     });
 });
-*/
+
 
 //===============================================
-// remove coffee tests
+// edit coffee tests(done)
 //===============================================
-/*
-describe("DELETE /remove", ()=>{
+
+describe("PUT /edit", ()=>{
+    //will use later
+    let loginToken;
+    let coffeeId;
+
     before((done) =>{
         connectDB()
-        .then(() => done())
+        .then(() =>{
+            //login
+            request(app).post("/login")
+            .send(testUser)
+            .then((result) => {
+                expect(result.body.message).contains("success");
+                loginToken = result.body.token;
+            })
+            .then(() =>{  //add coffee
+                request(app).post("/add")
+                .set('Authorization', loginToken)
+                .field("name", "TestCoffee2")
+                .field("desc", "this is test coffee 2")
+                .attach("image", "./tests/test.jpg")
+                .then((data) =>{
+                    expect(data.body.message).contains("added");
+                    coffeeId = data.body.id;
+                    done();
+                })
+                .catch((err) => done(err));
+            })
+            .catch((err) => done(err));
+        })
         .catch((err) => done(err));
     });
 
     after((done) =>{
-        closeDB()
-        .then(() => done())
-        .catch((err) => done(err));
+        request(app).delete("/remove/" + coffeeId)
+        .set('Authorization', loginToken)
+        .then((deleteResult) =>{
+            console.log(deleteResult.body.message);
+            expect(deleteResult.body.message).contains("removed");
+            closeDB()
+            .then(() => done())
+            .catch((err) => done(err));
+        })
+        .catch((err)=> done(err));
     });
 
-    it("TEST: removing coffee", (done) =>{
-        //login
-        request(app).post("/login")
-        .send(testUser)
-        .then((res) => {
-            console.log("1: " + res.body.message);
-            expect(res.body.message).contains("success");
-            return res.body.token;
+    it("TEST: updating coffee info", (done) =>{
+        //editing coffee
+        request(app).put("/edit/" + coffeeId)
+        .set('Authorization', loginToken)
+        .field("name", "changedTestCoffee")
+        .field("desc", "this coffee's info has been changed")
+        .attach("image", "./tests/changed.jpg")
+        .then((editResult) =>{
+            console.log(editResult.body.message);
+            expect(editResult.body.message).contains("edited");
+            done();
         })
-        .then((token) =>{   //add coffee
-            request(app).post("/add")
-            .set('Authorization', token)
-            .field("name", "TestCoffee2")
-            .field("desc", "this is test coffee 2")
-            .attach("image", "./tests/test.jpg")
-            .then((data) =>{
-                expect(data.body.message).contains("added");
-                return {token: token, id: data.body.id};
-            })
-            .then((data) =>{   //remove coffee
-                request(router).delete("/remove/" + data.id)
-                .send()
-                .then((res) =>{
-                    expect(res.body.message).contains("removed");
-                    done();
-                })
-                .catch((err)=>{
-                    return err;
-                });
-            })
-            .catch((err)=>{
-                return err;
-            });
-        })
-        .catch((err) =>{
+        .catch((err)=>{
             done(err);
         });
     });
 });
-*/
+
+
+//===============================================
+// remove coffee(done)
+//===============================================
 
 describe("DELETE /remove", ()=>{
     //will use later
@@ -245,15 +275,19 @@ describe("DELETE /remove", ()=>{
         .catch((err) => done(err));
     });
 
+    after((done) =>{
+        closeDB()
+        .then(() => done())
+        .catch((err) => done(err));
+    });
+
     it("TEST: deleting coffee", (done) =>{
         //remove coffee
-        const target = "/remove/"+coffeeId;
-        console.log("sending to " + target);
-        request(router).delete("/remove/" + coffeeId)
+        request(app).delete("/remove/" + coffeeId)
         .set('Authorization', loginToken)
         .then((deleteResult) =>{
             console.log(deleteResult.body.message);
-            expect(deleteResult.body.message).contains("deleted");
+            expect(deleteResult.body.message).contains("removed");
             done();
         })
         .catch((err)=>{
@@ -261,124 +295,6 @@ describe("DELETE /remove", ()=>{
         });
     });
 });
-//===============================================
-// edit coffee tests
-//===============================================
-/*
-describe("PUT /edit", ()=>{
-    before((done) =>{
-        connectDB()
-        .then(() => done())
-        .catch((err) => done(err));
-    });
-
-    after((done) =>{
-        closeDB()
-        .then(() => done())
-        .catch((err) => done(err));
-    });
-
-    it("TEST: editing coffee info", (done) =>{
-        //login
-        request(app).post("/login")
-        .send(testUser)
-        .then((result) => {
-            console.log("1: " + result.body.message);
-            expect(result.body.message).contains("success");
-            return result.body.token;
-        })
-        .then((token) =>{   //add coffee
-            request(app).post("/add")
-            .set('Authorization', token)
-            .field("name", "TestCoffee2")
-            .field("desc", "this is test coffee 2")
-            .attach("image", "./tests/test.jpg")
-            .then((data) =>{
-                expect(data.body.message).contains("added");
-                const id = data.body.id;
-                request(router).put("/edit/" + id)
-                .set('Authorization', token)
-                .field("name", "changedTestCoffee")
-                .field("desc", "this coffee's info has been changed")
-                .attach("image", "./tests/changed.jpg")
-                .then((editResult) =>{
-                    console.log(editResult.body.message);
-                    expect(editResult.body.message).contains("edited");
-                    done();
-                })
-                .catch((err)=>{
-                    done(err);
-                });
-            })
-            .catch((err)=>{
-                done(err);
-            });
-        })
-        .catch((err) =>{
-            done(err);
-        });
-    });
-});
-*/
-
-/* newer
-describe("PUT /edit", ()=>{
-    //will use later
-    let loginToken;
-    let coffeeId;
-
-    before((done) =>{
-        connectDB()
-        .then(() =>{
-            //login
-            request(app).post("/login")
-            .send(testUser)
-            .then((result) => {
-                expect(result.body.message).contains("success");
-                loginToken = result.body.token;
-                done();
-            })
-            .catch((err) => done(err));
-        })
-        .catch((err) => done(err));
-    });
-
-    after((done) =>{
-        closeDB()
-        .then(() => done())
-        .catch((err) => done(err));
-    });
-
-    it("TEST: editing coffee info", (done) =>{
-        //add coffee
-        request(app).post("/add")
-        .set('Authorization', loginToken)
-        .field("name", "TestCoffee2")
-        .field("desc", "this is test coffee 2")
-        .attach("image", "./tests/test.jpg")
-        .then((data) =>{
-            expect(data.body.message).contains("added");
-            coffeeId = data.body.id;
-            request(router).put("/edit/" + coffeeId)
-            .set('Authorization', loginToken)
-            .field("name", "changedTestCoffee")
-            .field("desc", "this coffee's info has been changed")
-            .attach("image", "./tests/changed.jpg")
-            .then((editResult) =>{
-                console.log(editResult.body.message);
-                expect(editResult.body.message).contains("edited");
-                done();
-            })
-            .catch((err)=>{
-                done(err);
-            });
-        })
-        .catch((err)=>{
-            done(err);
-        });
-    });
-});
-*/
 
 //================================================
 // reusable methods

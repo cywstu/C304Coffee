@@ -119,7 +119,7 @@ exports.editCoffee = async (req, res) =>{
         res.json({ message: "coffee edited" });
         console.log("coffee edited");
     }catch(err){
-        res.json({ hello: "163247457463456" });
+        res.json({ message: err.message });
     }
 }
 
@@ -133,5 +133,4 @@ exports.removeCoffee = async (req, res) =>{
     }catch(err){
         res.json({ message: "failed to remove coffee." });
     }
-    res.json({ message: "I wonder why" });
 }

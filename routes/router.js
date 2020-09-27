@@ -23,6 +23,7 @@ const upload = multer({
 const router = express.Router();
 const Controller = require("../controllers/controller");
 const auth = require("../middlewares/auth");
+
 //=============================================
 router.get("/", (req, res) => {
     res.json({ message: "success connecting to home page" });
@@ -30,14 +31,16 @@ router.get("/", (req, res) => {
 
 router.post("/login", Controller.login);
 
-router.get("/coffees", (req, res) => Controller.getAllCoffees);
+router.get("/coffees", Controller.getAllCoffees);
 router.get("/coffees/:coffeeName", Controller.getCoffee);
 router.get("/coffees/:coffeeName/image", Controller.getCoffeeImage);
 router.get("/coffees/id/:coffeeId", Controller.getCoffeeFromId);
 
+//take {name: ?string, desc: ?string, image: ?buffer}
 router.post("/add", auth, upload.single("image"), Controller.addCoffee);
+//take {name: ?string, desc: ?string, image: ?buffer}
 router.put("/edit/:coffeeId", auth, upload.single("image"), Controller.editCoffee);
-router.delete("/remove/:coffeeId",  Controller.removeCoffee);
+router.delete("/remove/:coffeeId", auth, Controller.removeCoffee);
 
 //================================================
 //signup(unused)
