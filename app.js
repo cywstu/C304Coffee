@@ -25,6 +25,8 @@ app.use((req, res, next) =>{
 //custom modules
 const router = require("./routes/router");
 app.use(router);
+const swagger = require("./swagger");
+app.use("/api-docs", swagger.serve, swagger.setup);
 
 //vars
 const port = process.env.PORT || 3000;
