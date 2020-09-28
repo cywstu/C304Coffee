@@ -9,7 +9,7 @@ const swaggerOptions = {
             contact: {
                 name: "real live failure"
             },
-            servers: ["http://localhost:3000"]
+            servers: ["https://c304coffee.herokuapp.com/"]
         }
     },
     apis: ["./routes/*.js"]
